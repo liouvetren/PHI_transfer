@@ -33,11 +33,11 @@ elif [[ $1 != "/hpss/"* && $2 == "/hpss/"* ]]; then
             FIX=${filebase:3:3}
             file_tmp=$TMP/$filebase.gpg
             file_des=$2/$PRE/$FIX/$filebase.gpg
-            hsi -P ls $file_des
+            hsi -P ls $file_des 2>&1 > /dev/null
             isexistcode=$?
             if [ $isexistcode != 0 ]; then
                 gpg --cipher-algo AES256 --passphrase $PHI_PASSWORD --batch  -o $file_tmp --symmetric $file
-                if [[ -f $file_tmp ]]; then
+                if [[ ! -f $file_tmp ]]; then
                     echo "$filebase not correctly encrypted" >> $LOG
                 fi
                 hsi "cput -P $file_tmp : $file_des" 
