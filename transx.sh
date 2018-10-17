@@ -1,5 +1,8 @@
 #!/bin/bash
 module load hpss
+LOG=transfer.log #for storing untransferred files
+rm $LOG
+touch $LOG
 
 if   [[ $1 == "/hpss/"* && $2 == "/hpss/"* ]]; then
 
@@ -22,7 +25,6 @@ elif [[ $1 != "/hpss/"* && $2 == "/hpss/"* ]]; then
     if [ ! -d "$1" ]; then
         echo "DC2 folder $1 does not exist"
     else
-
         TMP=/N/dc2/scratch/$USER/tranx_tmp
         mkdir -p $TMP
         for file in $(find $1 -type f); do
@@ -35,11 +37,13 @@ elif [[ $1 != "/hpss/"* && $2 == "/hpss/"* ]]; then
             isexistcode=$?
             if [ $isexistcode != 0 ]; then
                 gpg --cipher-algo AES256 --passphrase $PHI_PASSWORD --batch  -o $file_tmp --symmetric $file
-                hsi "cput -P $file_tmp : $file_des"
+                if [[ -f $file_tmp ]]; then
+                    echo "$filebase not correctly encrypted" >> $LOG
+                fi
+                hsi "cput -P $file_tmp : $file_des" 
                 rm $file_tmp
             fi
         done
-        
     fi
     
 else
